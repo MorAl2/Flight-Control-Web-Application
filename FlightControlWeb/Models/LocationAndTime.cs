@@ -15,12 +15,14 @@ namespace FlightControlWeb.Models
 
         public LocationAndTime(Double longi, Double lat, DateTime dateTime)
         {
-            this.latitude = lat;
-            this.longitude = longi;
+            this.Latitude = lat;
+            this.Longitude = longi;
             this.StartTime = dateTime;
         }
-        public Double longitude { get; set; } = Double.NaN;
-        public Double latitude { get; set; } = Double.NaN;
+        [JsonPropertyName("longitude")]
+        public Double Longitude { get; set; } = Double.NaN;
+        [JsonPropertyName("latitude")]
+        public Double Latitude { get; set; } = Double.NaN;
         [JsonPropertyName("date_time")]
         public DateTime StartTime { get; set; }
     }

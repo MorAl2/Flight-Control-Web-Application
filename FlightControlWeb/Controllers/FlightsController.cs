@@ -20,11 +20,11 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/Flights
         [HttpGet]
-        public IEnumerable<Flight> GetFlights([FromQuery] DateTime relative_to)
+        public async Task<IEnumerable<Flight>> GetFlights([FromQuery] DateTime relative_to)
         {
             relative_to = relative_to.ToUniversalTime();
             bool sync = Request.QueryString.Value.Contains("sync_all");
-            return this.flightControlManager.GetFlights(relative_to, sync);
+            return await this.flightControlManager.GetFlights(relative_to, sync);
         }
 
         // DELETE: api/ApiWithActions/5

@@ -22,9 +22,10 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/FlightPlan/5
         [HttpGet("{id}", Name = "Get")]
-        public FlightPlan GetFlightPlan(string id)
+        public async Task<FlightPlan> GetFlightPlan(string id)
         {
-            return this.flightControlManager.GetFlightPlan(id);
+            // TODO - need to ask from outer servers to
+            return await this.flightControlManager.GetFlightPlan(id);
         }
 
         // POST: api/FlightPlan
@@ -45,7 +46,7 @@ namespace FlightControlWeb.Controllers
         {
             if(plan.Company_Name!=null&& plan.Initial_Location!=null && plan.Passengers!=null && plan.Segments!= null)
             {
-                if(plan.Initial_Location.latitude!=Double.NaN && plan.Initial_Location.longitude != Double.NaN && plan.Initial_Location.StartTime != null)
+                if(plan.Initial_Location.Latitude!=Double.NaN && plan.Initial_Location.Longitude != Double.NaN && plan.Initial_Location.StartTime != null)
                 return true;
             }
 
