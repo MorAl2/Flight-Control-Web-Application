@@ -24,7 +24,7 @@ namespace FlightControlWeb.Controllers
         {
             relative_to = relative_to.ToUniversalTime();
             bool sync = Request.QueryString.Value.Contains("sync_all");
-            return await this.flightControlManager.GetFlights(relative_to, sync);
+            return await flightControlManager.GetFlights(relative_to, sync);
         }
 
         // DELETE: api/ApiWithActions/5

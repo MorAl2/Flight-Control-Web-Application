@@ -27,6 +27,7 @@ namespace FlightControlWeb
         {
             services.AddControllers();
             services.AddSingleton(typeof(IFlightManager),typeof(FlightControlManager));
+                        
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,6 +37,7 @@ namespace FlightControlWeb
             {
                 app.UseDeveloperExceptionPage();
             }
+           
             app.UseStaticFiles();
             app.UseRouting();
 
