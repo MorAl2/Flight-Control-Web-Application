@@ -45,38 +45,45 @@ namespace FlightControlWeb.Models
             }
             else if (externalFlightsIndex.TryGetValue(id, out serverExt))
             {
-                HttpResponseMessage responseMessage;
-                if (serverExt.ServerURL[serverExt.ServerURL.Length - 1] == '/')
+                try
                 {
-                    responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "api/FlightPlan/" + id);
-                }
-                else
-                {
-                    responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "/api/FlightPlan/" + id);
-                }
-                if (responseMessage.IsSuccessStatusCode)
-                {
-                    var responseString = await responseMessage.Content.ReadAsStringAsync();
-                    JObject jsonFlightPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(responseString);
-                    FlightPlan tempFlightPlan = new FlightPlan();
-                    tempFlightPlan.Company_Name = (string) jsonFlightPlan["company_name"];
-                    tempFlightPlan.Flight_Id = (string)jsonFlightPlan["flight_Id"];
-                    tempFlightPlan.Initial_Location = new LocationAndTime();
-                    tempFlightPlan.Initial_Location.Latitude = (double)jsonFlightPlan["initial_location"]["latitude"];
-                    tempFlightPlan.Initial_Location.Longitude = (double)jsonFlightPlan["initial_location"]["longitude"];
-                    tempFlightPlan.Initial_Location.StartTime = (DateTime)jsonFlightPlan["initial_location"]["date_time"];
-                    tempFlightPlan.Initial_Location.StartTime = tempFlightPlan.Initial_Location.StartTime.ToUniversalTime();
-                    tempFlightPlan.Passengers = (int)jsonFlightPlan["passengers"];
-                    tempFlightPlan.Segments = new List<Segment>();
-                    foreach(var segment in jsonFlightPlan["segments"])
+                    HttpResponseMessage responseMessage;
+                    if (serverExt.ServerURL[serverExt.ServerURL.Length - 1] == '/')
                     {
-                        Segment segmentTemp = new Segment();
-                        segmentTemp.Latitude = (double) segment["latitude"];
-                        segmentTemp.Longitude = (double)segment["longitude"];
-                        segmentTemp.Timespan_seconds = (int)segment["timespan_seconds"];
-                        tempFlightPlan.Segments.Add(segmentTemp);
+                        responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "api/FlightPlan/" + id);
                     }
-                    return tempFlightPlan;
+                    else
+                    {
+                        responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "/api/FlightPlan/" + id);
+                    }
+                    if (responseMessage.IsSuccessStatusCode)
+                    {
+                        var responseString = await responseMessage.Content.ReadAsStringAsync();
+                        JObject jsonFlightPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(responseString);
+                        FlightPlan tempFlightPlan = new FlightPlan();
+                        tempFlightPlan.Company_Name = (string)jsonFlightPlan["company_name"];
+                        tempFlightPlan.Flight_Id = (string)jsonFlightPlan["flight_Id"];
+                        tempFlightPlan.Initial_Location = new LocationAndTime();
+                        tempFlightPlan.Initial_Location.Latitude = (double)jsonFlightPlan["initial_location"]["latitude"];
+                        tempFlightPlan.Initial_Location.Longitude = (double)jsonFlightPlan["initial_location"]["longitude"];
+                        tempFlightPlan.Initial_Location.StartTime = (DateTime)jsonFlightPlan["initial_location"]["date_time"];
+                        tempFlightPlan.Initial_Location.StartTime = tempFlightPlan.Initial_Location.StartTime.ToUniversalTime();
+                        tempFlightPlan.Passengers = (int)jsonFlightPlan["passengers"];
+                        tempFlightPlan.Segments = new List<Segment>();
+                        foreach (var segment in jsonFlightPlan["segments"])
+                        {
+                            Segment segmentTemp = new Segment();
+                            segmentTemp.Latitude = (double)segment["latitude"];
+                            segmentTemp.Longitude = (double)segment["longitude"];
+                            segmentTemp.Timespan_seconds = (int)segment["timespan_seconds"];
+                            tempFlightPlan.Segments.Add(segmentTemp);
+                        }
+                        return tempFlightPlan;
+                    }
+                }
+                catch
+                {
+                    return new FlightPlan();
                 }
             }
             return new FlightPlan();
@@ -100,34 +107,41 @@ namespace FlightControlWeb.Models
             {
                 foreach (Server server in servers.Values)
                 {
-                    HttpResponseMessage responseMessage;
-                    if (server.ServerURL[server.ServerURL.Length - 1] == '/')
+                    try
                     {
-                        responseMessage = await httpClient.GetAsync(server.ServerURL + "api/Flights?relative_to=" + rel.ToString());
-                    }
-                    else
-                    {
-                        responseMessage = await httpClient.GetAsync(server.ServerURL + "/api/Flights?relative_to=" + rel.ToString());
-                    }
-
-                    if (responseMessage.IsSuccessStatusCode)
-                    {
-                        var responseString = await responseMessage.Content.ReadAsStringAsync();
-                        JArray jsonFlightsArray = Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(responseString);
-                        foreach (var flight in jsonFlightsArray)
+                        HttpResponseMessage responseMessage;
+                        if (server.ServerURL[server.ServerURL.Length - 1] == '/')
                         {
-                            Flight tempFlight = new Flight();
-                            tempFlight.Company_Name = (string)flight["company_name"];
-                            tempFlight.Flight_id = (string)flight["flight_id"];
-                            tempFlight.Is_external = true;
-                            tempFlight.Latitude = (double)flight["latitude"];
-                            tempFlight.Longitude = (double)flight["longitude"];
-                            tempFlight.Passengers = (int)flight["passengers"];
-                            tempFlight.TakeOffTime = (DateTime)flight["date_time"];
-                            tempFlight.TakeOffTime = tempFlight.TakeOffTime.ToUniversalTime();
-                            flights.Add(tempFlight);
-                            externalFlightsIndex.TryAdd(tempFlight.Flight_id, server);
+                            responseMessage = await httpClient.GetAsync(server.ServerURL + "api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
                         }
+                        else
+                        {
+                            responseMessage = await httpClient.GetAsync(server.ServerURL + "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                        }
+
+                        if (responseMessage.IsSuccessStatusCode)
+                        {
+                            var responseString = await responseMessage.Content.ReadAsStringAsync();
+                            JArray jsonFlightsArray = Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(responseString);
+                            foreach (var flight in jsonFlightsArray)
+                            {
+                                Flight tempFlight = new Flight();
+                                tempFlight.Company_Name = (string)flight["company_name"];
+                                tempFlight.Flight_id = (string)flight["flight_id"];
+                                tempFlight.Is_external = true;
+                                tempFlight.Latitude = (double)flight["latitude"];
+                                tempFlight.Longitude = (double)flight["longitude"];
+                                tempFlight.Passengers = (int)flight["passengers"];
+                                tempFlight.TakeOffTime = (DateTime)flight["date_time"];
+                                tempFlight.TakeOffTime = tempFlight.TakeOffTime.ToUniversalTime();
+                                flights.Add(tempFlight);
+                                externalFlightsIndex.TryAdd(tempFlight.Flight_id, server);
+                            }
+                        }
+                    }
+                    catch
+                    {
+
                     }
                 }
             }
