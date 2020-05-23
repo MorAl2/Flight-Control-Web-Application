@@ -50,7 +50,7 @@ namespace FlightControlWeb.Models
             {
                 TimeSpan timeSinceSegmentStarted = dateTimeTemp.Subtract(rel);
                 timeSinceSegmentStarted = new TimeSpan(0, 0, (int)Segments[segNum].Timespan_seconds).Subtract(timeSinceSegmentStarted);
-                double seconds = timeSinceSegmentStarted.Seconds;
+                double seconds = timeSinceSegmentStarted.TotalSeconds;
                 double precentPassed = (seconds / Segments[segNum].Timespan_seconds) * 100;
                 double x = Segments[segNum - 1].Latitude + (Segments[segNum].Latitude - Segments[segNum - 1].Latitude) * (precentPassed / 100);
                 double y = Segments[segNum - 1].Longitude + (Segments[segNum].Longitude - Segments[segNum - 1].Longitude) * (precentPassed / 100);
@@ -60,7 +60,7 @@ namespace FlightControlWeb.Models
             {
                 TimeSpan timeSinceSegmentStarted = dateTimeTemp.Subtract(rel);
                 timeSinceSegmentStarted = new TimeSpan(0, 0, (int)Segments[segNum].Timespan_seconds).Subtract(timeSinceSegmentStarted);
-                double seconds = timeSinceSegmentStarted.Seconds;
+                double seconds = timeSinceSegmentStarted.TotalSeconds;
                 double precentPassed = (seconds / Segments[segNum].Timespan_seconds) * 100;
                 double x = this.Initial_Location.Latitude + (Segments[segNum].Latitude - this.Initial_Location.Latitude) * (precentPassed / 100);
                 double y = this.Initial_Location.Longitude + (Segments[segNum].Longitude - this.Initial_Location.Longitude) * (precentPassed / 100);
