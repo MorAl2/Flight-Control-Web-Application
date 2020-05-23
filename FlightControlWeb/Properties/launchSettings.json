@@ -23,8 +23,7 @@
       "launchUrl": "index.html",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:6000"
+      }
     }
   }
 }
