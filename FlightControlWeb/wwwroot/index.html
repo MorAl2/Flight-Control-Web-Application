@@ -1,10 +1,100 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="utf-8">
+    <title>Flights</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Push To Master Test!</h1>
+<body onload="load()">
+    <div class="container-fluid">
+        <div class="row h-100">
+            <div class="col-md-7 p-3"><div id="map" style="height:400px;"></div></div>
+            <div class="col-md-5 p-3">
+                <div id="drop-area">
+                    <form class="my-form">
+                        <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+                        <table id="FlightsTable" class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Flight ID
+                                    </th>
+                                    <th>
+                                        Airline
+                                    </th>
+                                    <th>
+                                        Is External
+                                    </th>
+                                    <th>
+                                        Delete
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-7 p-3">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action active">Flight Details</a>
+                    <div id="FlightID" class="list-group-item">
+                        <p id="PFlightsDetailes" class="list-group-item-text">
+                            <div id="a" class="AList">
+                                <label> company_name : </label> <label class="dynamicLabel" id="comp"></label>
+                                <br />
+                                <label> initial_location : </label>
+                                <br />
+                                <label> longitude : </label> <label class="dynamicLabel" id="initLong"></label>
+                                <br />
+                                <label> latitude : </label> <label class="dynamicLabel" id="initLatit"></label>
+                                <br />
+                                <label> End Time : </label> <label class="dynamicLabel" id="EndTime"></label>
+                            </div>
+                            <div id="b" class="List">
+                                <label> Date Time : </label> <label class="dynamicLabel" id="StartTime"></label>
+                                <br />
+                                <label> passengers : </label> <label class="dynamicLabel" id="pass"></label>
+                                <br />
+                                <label> final_location : </label>
+                                <br />
+                                <label> longitude : </label> <label class="dynamicLabel" id="finalLong"></label>
+                                <br />
+                                <label> latitude : </label> <label class="dynamicLabel" id="finalLatit"></label>
+                            </div>
+                        </p>
+                    </div>
+                    <div class="list-group-item">
+                        <h4 class="list-group-item-heading">
+                        </h4>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 p-3"><h2 class="display-3">Flight Control </br> Web Application</h2></div>
+        </div>
+
+
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
+
+    <script src="js/JavaScript.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/popper.min.js"></script>
+
+
 </body>
 </html>
