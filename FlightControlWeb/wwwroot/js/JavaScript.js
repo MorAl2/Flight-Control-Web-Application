@@ -2,7 +2,7 @@
 
 function load() {
     //מבצע את הפקודה גט עבור כל הטיסות הפעילות אחת ל- 3 שניות
-    setInterval(getFunc, 8000);
+    setInterval(getFunc, 1000);
     //הגדרות עבור האזור גרירה
     let dropArea = document.getElementById('drop-area');
     let t = document.getElementById('FlightsTable');
