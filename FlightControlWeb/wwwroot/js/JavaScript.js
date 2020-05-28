@@ -2,9 +2,10 @@
 
 function load() {
     //מבצע את הפקודה גט עבור כל הטיסות הפעילות אחת ל- 3 שניות
-    setInterval(getFunc, 3000);
+    setInterval(getFunc, 8000);
     //הגדרות עבור האזור גרירה
     let dropArea = document.getElementById('drop-area');
+    let t = document.getElementById('FlightsTable');
     // מגדיר פונקציה לטיפול באירוע גרירה 
     dropArea.addEventListener('drop', handleDrop, false)
         ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -26,15 +27,18 @@ function load() {
     });
     // מעצב את האובייקט כאשר יש קובץ שנגרר לתוכו
     function highlight(e) {
-        dropArea.classList.add('highlight')
+        dropArea.classList.add('highlight');
+        t.style.display = "none";
     }
     // מבטל את העיצוב במידה ואין קובץ שנגרר לתוכו
     function unhighlight(e) {
-        dropArea.classList.remove('highlight')
+        dropArea.classList.remove('highlight');
+       // t.style.display = "block";
     }
 }
 // פונקציה המטפלת באירוע גרירת קובץ
 function handleDrop(e) {
+    document.getElementById('FlightsTable').style.display = "block";
     let dt = e.dataTransfer
     let files = dt.files
     // שליחת לפונקציה שמעלה כל קובץ בנפרד
@@ -47,7 +51,6 @@ function handleFiles(files) {
 }
 // פונקציה שמעלה קובץ לשרת באמצעות פוסט
 function uploadFile(file) {
-    console.log(file)
     var reader = new FileReader();
     let jsonText;
     let ContentType = 'application/json;charset=utf-8';
@@ -74,7 +77,7 @@ function uploadFile(file) {
         //מבצע את פקודת הפוסט עם הפרמטרים הרלוונטיים
         fetch(url, postOptions)
             .then(Response => Response.text())
-            .then(Response => console.log("respose: " + Response))
+            .then(Response => console.log("response: " + Response))
     };
     // פונקציה לביצוע קריאת הקובץ כטקסט
     reader.readAsText(file); 
@@ -109,12 +112,16 @@ function populateFlights(json) {
     //דגל שמטרתו לבדוק אם התבצעה לחיצה
     let press = 0;
     //ריקון הטבלה מהתוכן הקיים
-    while (FlightsBody.firstChild) {
+     while (FlightsBody.firstChild) {
         //בדיקה אם השורה הנוכחית בטבלה מודגשת
-        if (press == 0 && FlightsBody.firstChild.firstChild != null) press = checkPress(FlightsBody.firstChild);
+         if (press == 0 && FlightsBody.firstChild.firstChild != null)
+         {
+             press = checkPress(FlightsBody.firstChild);            
+         }
         //מחיקת השורה הנוכחית
         FlightsBody.removeChild(FlightsBody.firstChild);
     }
+     
     //מייצר את שורות הטבלה מחדש
     json.forEach((row) => {
         createRow(row, FlightsBody,press);
@@ -122,7 +129,9 @@ function populateFlights(json) {
 }
 //פונקציה שבהנתן שורה בודקת אם היא מודגשת- אם כן מחזירה את המזהה שלה, אחרת-0
 function checkPress(row) {
-    if (row.style.backgroundColor == "red") return row.firstChild;
+    if (row.style.backgroundColor == "rgb(108, 122, 137)") {
+        return row.firstChild.textContent;
+    }
     return 0;
 }
 
@@ -131,6 +140,10 @@ function createRow(row, FlightsBody,press)
     //הגדרת אייקון המחיקה
     let img = document.createElement('img');
     img.src = "delete.png";
+    img.id="delImg";
+    img.height = 30;
+    img.width = 25;
+    img.align = "left";
     //הגדרת שורה חדשה בטבלה
     const tr = document.createElement("tr");
     //הגדרת תא
@@ -141,12 +154,13 @@ function createRow(row, FlightsBody,press)
     tdAirline.textContent = row.company_name;
     const tdExternal = document.createElement("td");
     tdExternal.textContent = row.is_external;
+    tdExternal.textContent = tdExternal.textContent.charAt(0).toUpperCase() + tdExternal.textContent.slice(1);
     //אם אכן הטיסה פנימית- נוסיף עבורה את אייקון המחיקה
     if (row.is_external == false) {
         tdDelete = img;
     }
     //בדיקה האם המזהה של השורה הוא המזהה של השורה המודגשת בעבר- ואם כן מדגיש אותה שוב
-    if (press != 0 && row.flight_id == press.innerText) tr.style.backgroundColor = "red";
+    if (press != 0 && row.flight_id == press) tr.style.backgroundColor = "#6C7A89";
     //הכנסת התאים לשורה החדשה
     tr.appendChild(tdID);
     tr.appendChild(tdAirline);
@@ -169,6 +183,11 @@ function createRow(row, FlightsBody,press)
             DeleteUpdateFlightDetailsFromClient(event.srcElement.parentElement);
         //אם הלחיצה התבצעה על חלק אחר של השורה 
         } else {
+            if (flag == 0) {
+                //removeTrack(data["flight_id"]); //added by Gal
+                resetMarkers();
+                //generateTrackFromId(data["flight_id"], data); //added by Gal
+            }
             //הדגשת השורה
             pressRow(CellClickID)
             // הבאת פרטי הטיסה באמצעות בקשת גט+מזהה
@@ -189,22 +208,24 @@ function deleteFlight(data) {
     }
     getFlightsAsync()
         .then(data => {
-            console.log(data)
+            //console.log(data)
         })
 }
 
 function pressRow(CellClickID) {
-    console.log("row presesd");
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
     var i = 0;
     let row;
     //מעבר על שורות הטבלה, הסרת הדגשה קיימת וביצוע הדגשה חדשה לשורה הרלוונטית
     for (i; i < FlightsBody.childElementCount; i++) {
         row = FlightsBody.rows[i];
-        if (row.style.backgroundColor == "red") row.style.backgroundColor = "";
-        if (row.firstChild.innerText == CellClickID) row.style.backgroundColor = "red";
+        if (row.style.backgroundColor == "rgb(108, 122, 137)") {
+            row.style.backgroundColor = "";
+        }
+        if (row.firstChild.innerText == CellClickID) {
+            row.style.backgroundColor = "rgb(108, 122, 137)";
+        }
     }
-
 }
 
 function getFlightPlanByID(id) {
@@ -218,7 +239,6 @@ function getFlightPlanByID(id) {
     }
     getFlightsAsync()
         .then(data => {
-            console.log(data)
             //עידכון פרטי הטיסה
             updateFlightDetailsFromServer(data)
         })
@@ -226,24 +246,23 @@ function getFlightPlanByID(id) {
 function updateFlightDetailsFromServer(data) {
     if (flag == 0) {
         //removeTrack(data["flight_id"]); //added by Gal
-        resetMarkers();
+        //resetMarkers();
         generateTrackFromId(data["flight_id"], data); //added by Gal
     }    
     let landingTime = calculateLandingTime(data["initial_location"]["date_time"], data);
     document.getElementById("comp").innerHTML = data.company_name;
-    document.getElementById("initLong").innerHTML = data.initial_location.longitude;
-    document.getElementById("initLatit").innerHTML = data.initial_location.latitude;
-    document.getElementById("initLatit").innerHTML = data.initial_location.latitude;
+    document.getElementById("initLong").innerHTML = "(" + data.initial_location.longitude + ", ";
+    document.getElementById("initLatit").innerHTML = data.initial_location.latitude + ")";
     document.getElementById("EndTime").innerHTML = landingTime.toISOString();
     document.getElementById("StartTime").innerHTML = data.initial_location.date_time;
     document.getElementById("pass").innerHTML = data.passengers;
-    document.getElementById("finalLong").innerHTML = data.segments[data.segments.length - 1].longitude;
-    document.getElementById("finalLatit").innerHTML = data.segments[data.segments.length - 1].latitude;
+    document.getElementById("finalLong").innerHTML = "(" + data.segments[data.segments.length - 1].longitude + ", ";
+    document.getElementById("finalLatit").innerHTML = data.segments[data.segments.length - 1].latitude + ")";
     flag = 0
 }
 function DeleteUpdateFlightDetailsFromClient(data) {
     //בודק אם השורה שברצוננו למחוק מודגשת- אם כן- מוחק את פרטי הטיסה
-    if (data.style.backgroundColor == "red") {
+    if (data.style.backgroundColor == "rgb(108, 122, 137)") {
         document.getElementById("comp").innerHTML = "";
         document.getElementById("initLong").innerHTML = "";
         document.getElementById("initLatit").innerHTML = "";
@@ -312,7 +331,6 @@ function renderMarker(location, id, time) { // create marker object from given l
         }
     })
     if (updateMarker == 0) { //if we didn't find this marker, we create a new one.
-        console.log("new marker created");
         let marker = L.marker(location, { icon: startingIcon });
         let d = new Date(time);
         marker.id = id;
@@ -326,16 +344,13 @@ function renderMarker(location, id, time) { // create marker object from given l
 }
 
 function addAllToMap() { //add all flights to the map layers.
-    console.log("insind add all to map");
     for (i = 0; i < markers.length; i++) {
         map.addLayer(markers[i])
     }
 }
 
 function selectMarker() { //resize the marker and displays its track.
-
     let thisFlightId = this.id;
-    resetDetails(thisFlightId); //***************************************************************
     for (i = 0; i < markers.length; i++) {
         if (markers[i].id === thisFlightId) {
             markers[i].setIcon(pressedIcon);
@@ -348,16 +363,15 @@ function selectMarker() { //resize the marker and displays its track.
 
 function resetMarkers() { //reset size for all markers clear the track when map is clicked.
     //TODO - clear flight details and unpress it in the table.
-    console.log("MAP CLICKED");
     for (i = 0; i < markers.length; i++) {
         markers[i].setIcon(startingIcon);
     }
     if (trackObj.id !== "0") {
-        resetDetails(trackObj.id); //***************************************************************
         trackObj.id = "0"; //reset track id
         trackObj.track.length = 0; //reset the track
         map.removeLayer(polyline); //remove The Track itself
     }
+    resetDetails(); //***************************************************************
 }
 
 function renderTrack(marker) { //function for displaing the flight track
@@ -367,6 +381,7 @@ function renderTrack(marker) { //function for displaing the flight track
             trackObj.track.length = 0;
             map.removeLayer(polyline); //remove the current track
             let wantedId = marker.id;
+            resetDetails(wantedId);
             let path = "http://localhost:55997/api/FlightPlan/" + wantedId;
             flightPlanGetter(path);
             async function flightPlanGetter(wantedPath) {
@@ -377,6 +392,7 @@ function renderTrack(marker) { //function for displaing the flight track
         }
     } else { //no truck is beeing shown currently.
         let wantedId = marker.id;
+        resetDetails(wantedId);
         let path = "http://localhost:55997/api/FlightPlan/" + wantedId;
         flightPlanGetter(path);
         async function flightPlanGetter(wantedPath) {
@@ -425,6 +441,7 @@ function createMarkerFromFlight(data) { //gets flight object and extract it's de
         renderMarker([lat, lon], data[i]["flight_id"], data[i]["date_time"]);
     }
 
+    //removing landed flights 
     for (i = 0; i < markers.length; i++) {
         if (markers[i].onAir == 0) {
             removeTrack(markers[i].id);
@@ -435,7 +452,6 @@ function createMarkerFromFlight(data) { //gets flight object and extract it's de
 }
 
 function removeTrack(idToCheck) { //clear track if it's flight has been deleted.
-    console.log("INSIDE removeTrack");
     if (trackObj.id === idToCheck) {
         trackObj.id = "0"; //reset track id
         trackObj.track.length = 0; //reset the track
@@ -457,7 +473,7 @@ function refreshMap() {//keeps the map updated.
 //fId - the id of the line we pressed on.
 //flightPlan - the relevent flight plan
 function generateTrackFromId(fId, flightPlan) {
-    resetDetails(fId);
+    //resetDetails(fId);
     //display the relevent marker.
     for (i = 0; i < markers.length; i++) {
         // 

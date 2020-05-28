@@ -155,6 +155,14 @@ namespace FlightControlWeb.Models
 
         public void RemoveServer(string id)
         {
+            
+            foreach (KeyValuePair<string, Server> pair in externalFlightsIndex)
+            {
+                if (pair.Value.ServerId == id)
+                {
+                    externalFlightsIndex.TryRemove(pair.Key, out _);
+                }
+            }
             this.servers.TryRemove(id, out _);
         }
 
@@ -177,7 +185,7 @@ namespace FlightControlWeb.Models
             {
                 if (words[0].Length >= 2)
                 {
-                    id += words[0][0].ToString() + words[0][1].ToString();
+                    id += words[0][0].ToString() + words[0][1].ToString().ToUpper();
                 }
             }
             id += RandomAlphanmeric(8 - id.Length);
