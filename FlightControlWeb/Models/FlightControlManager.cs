@@ -145,7 +145,7 @@ namespace FlightControlWeb.Models
                     }
                 }
             }
-            return flights;
+            return flights.OrderBy(e => e.Is_external ? 1 : 0);
         }
 
         public IEnumerable<Server> GetServers()
