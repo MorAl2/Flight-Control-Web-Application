@@ -35,7 +35,7 @@ namespace FlightControlWeb.Controllers
                 this.flightControlManager.addServer(server);
                 return Ok("Server Added");
             }
-            return NotFound("Invalid Server");
+            return BadRequest("Invalid Server");
         }
 
         // DELETE: api/ApiWithActions/5

@@ -24,7 +24,6 @@ namespace FlightControlWeb.Controllers
         [HttpGet("{id}", Name = "Get")]
         public async Task<FlightPlan> GetFlightPlan(string id)
         {
-            // TODO - need to ask from outer servers to
             return await this.flightControlManager.GetFlightPlan(id);
         }
 
@@ -38,7 +37,7 @@ namespace FlightControlWeb.Controllers
                 this.flightControlManager.AddFlightPlan(flightPlan);
                 return Ok("Flight Id: " + flightPlan.Flight_Id);
             }
-            return NotFound("Invalid FlightPlan");
+            return BadRequest("Invalid FlightPlan");
 
         }
 
