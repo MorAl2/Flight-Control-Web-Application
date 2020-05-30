@@ -1,5 +1,6 @@
 ﻿let flag = 0;
-
+let port = "localhost";
+let ip = "55997";
 function load() {
     //מבצע את הפקודה גט עבור כל הטיסות הפעילות אחת ל- 3 שניות
     setInterval(getFunc, 1000);
@@ -59,7 +60,7 @@ function uploadFile(file) {
         //הקובץ טקסט שקראתי
         jsonText = event.target.result
         //כתובת לשליחה בפוסט
-        let url = "http://localhost:55997/api/FlightPlan"
+        let url = "http://" + port + ":" + ip + "/api/FlightPlan"
         let postOptions = preparePost(jsonText);
         //פונקציה היוצרת את הפרמטרים של בקשת הפוסט
         function preparePost(todo) {
@@ -86,7 +87,7 @@ function getFunc() {
     const time = new Date;
     //המרת הזמן הנוכחי לפורמט הנדרש בתרגיל
     let timeToSend = time.toISOString().split('.')[0] + "Z"
-    timeToSend = "http://localhost:55997/api/Flights?relative_to=" + timeToSend +"&sync_all";
+    timeToSend = "http://" + port + ":" + ip + "/api/Flights?relative_to=" + timeToSend +"&sync_all";
     async function getFlightsAsync() {
         //מבצע את הפעולה גט ושומר את התוצאה
         let response = await fetch(timeToSend);
@@ -199,7 +200,7 @@ function createRow(row, FlightsBody,press)
 }
 
 function deleteFlight(data) {
-    url = "http://localhost:55997/api/Flights/" + data;
+    url = "http://" + port + ":" + ip + "/api/Flights/" + data;
     async function getFlightsAsync() {
         //מבצע בקשה למחיקה של הטיסה הרלוונטית מהשרת 
         let response = await fetch(url, { method: 'DELETE' });
@@ -229,7 +230,7 @@ function pressRow(CellClickID) {
 }
 
 function getFlightPlanByID(id) {
-    url = "http://localhost:55997/api/FlightPlan/" + id;
+    url = "http://" + port + ":" + ip + "/api/FlightPlan/" + id;
     async function getFlightsAsync() {
         //ביצוע בקשת הגט
         let response = await fetch(url);
@@ -240,14 +241,12 @@ function getFlightPlanByID(id) {
     getFlightsAsync()
         .then(data => {
             //עידכון פרטי הטיסה
-            updateFlightDetailsFromServer(data)
+            updateFlightDetailsFromServer(data, id)
         })
 }
-function updateFlightDetailsFromServer(data) {
+function updateFlightDetailsFromServer(data, flightID) {
     if (flag == 0) {
-        //removeTrack(data["flight_id"]); //added by Gal
-        //resetMarkers();
-        generateTrackFromId(data["flight_id"], data); //added by Gal
+        generateTrackFromId(flightID, data);
     }    
     let landingTime = calculateLandingTime(data["initial_location"]["date_time"], data);
     document.getElementById("comp").innerHTML = data.company_name;
@@ -382,7 +381,7 @@ function renderTrack(marker) { //function for displaing the flight track
             map.removeLayer(polyline); //remove the current track
             let wantedId = marker.id;
             resetDetails(wantedId);
-            let path = "http://localhost:55997/api/FlightPlan/" + wantedId;
+            let path = "http://" + port + ":" + ip + "/api/FlightPlan/" + wantedId;
             flightPlanGetter(path);
             async function flightPlanGetter(wantedPath) {
                 let response = await fetch(wantedPath).catch(handleErr);
@@ -393,7 +392,7 @@ function renderTrack(marker) { //function for displaing the flight track
     } else { //no truck is beeing shown currently.
         let wantedId = marker.id;
         resetDetails(wantedId);
-        let path = "http://localhost:55997/api/FlightPlan/" + wantedId;
+        let path = "http://" + port + ":" + ip + "/api/FlightPlan/" + wantedId;
         flightPlanGetter(path);
         async function flightPlanGetter(wantedPath) {
             let response = await fetch(wantedPath).catch(handleErr);
@@ -414,8 +413,8 @@ function fillTrack(flight, flightPlan) { //drawing the track on the map.
     }
     polyline = L.polyline(trackObj.track, { color: '#69ff33' });
     map.addLayer(polyline);
-    pressRow(trackObj.id, flightPlan); //****************************************************************************
-    updateFlightDetailsFromServer(flightPlan); //********************************************************
+    pressRow(trackObj.id); //****************************************************************************
+    updateFlightDetailsFromServer(flightPlan, trackObj.id); //********************************************************
 }
 
 
