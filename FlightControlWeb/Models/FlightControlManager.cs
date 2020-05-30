@@ -62,7 +62,7 @@ namespace FlightControlWeb.Models
                         JObject jsonFlightPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(responseString);
                         FlightPlan tempFlightPlan = new FlightPlan();
                         tempFlightPlan.Company_Name = (string)jsonFlightPlan["company_name"];
-                        tempFlightPlan.Flight_Id = (string)jsonFlightPlan["flight_id"];
+                        tempFlightPlan.Flight_Id = (string)jsonFlightPlan["id"];
                         tempFlightPlan.Initial_Location = new LocationAndTime();
                         tempFlightPlan.Initial_Location.Latitude = (double)jsonFlightPlan["initial_location"]["latitude"];
                         tempFlightPlan.Initial_Location.Longitude = (double)jsonFlightPlan["initial_location"]["longitude"];
