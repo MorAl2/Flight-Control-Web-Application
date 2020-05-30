@@ -156,6 +156,7 @@ function createRow(row, FlightsBody,press)
     const tdExternal = document.createElement("td");
     tdExternal.textContent = row.is_external;
     tdExternal.textContent = tdExternal.textContent.charAt(0).toUpperCase() + tdExternal.textContent.slice(1);
+    //let tdDelete = ????; 
     //אם אכן הטיסה פנימית- נוסיף עבורה את אייקון המחיקה
     if (row.is_external == false) {
         tdDelete = img;
