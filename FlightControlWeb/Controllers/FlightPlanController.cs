@@ -43,7 +43,7 @@ namespace FlightControlWeb.Controllers
 
         public Boolean IsValidFlightPlan(FlightPlan plan)
         {
-            if(plan.Company_Name!=null&& plan.Initial_Location!=null && plan.Passengers!=null && plan.Segments!= null)
+            if(plan.Company_Name!=null&& plan.Initial_Location!=null && plan.Passengers!=-1 && plan.Segments!= null)
             {
                 if(plan.Initial_Location.Latitude!=Double.NaN && plan.Initial_Location.Longitude != Double.NaN && plan.Initial_Location.StartTime != null)
                 return true;
