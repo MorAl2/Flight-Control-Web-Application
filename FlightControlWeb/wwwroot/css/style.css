@@ -11,8 +11,6 @@
 }
 
     #drop-area.highlight {
-        position: center;
-        border-color: purple;
         background-image: url('drag.png');
     }
 

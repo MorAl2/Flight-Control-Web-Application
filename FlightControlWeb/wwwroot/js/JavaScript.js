@@ -2,47 +2,43 @@
 let port = "localhost";
 let ip = "55997";
 function load() {
-    //מבצע את הפקודה גט עבור כל הטיסות הפעילות אחת ל- 3 שניות
+    //Executes the Get command for all active flights once every 3 seconds
     setInterval(getFunc, 1000);
-    //הגדרות עבור האזור גרירה
+    //Settings for the drag area
     let dropArea = document.getElementById('drop-area');
-    let t = document.getElementById('FlightsTable');
-    // מגדיר פונקציה לטיפול באירוע גרירה 
+    let f = document.getElementById('form');
+    // Defines a function that handles drag
     dropArea.addEventListener('drop', handleDrop, false)
         ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, preventDefaults, false)
         })
-
-    // מבטל את ההתנהגות ברירת מחדל של הדפדפן
+    // Cancels the default browser behavior
     function preventDefaults(e) {
         e.preventDefault()
         e.stopPropagation()
     }
-
     ['dragenter', 'dragover'].forEach(eventName => {
         dropArea.addEventListener(eventName, highlight, false)
     });
-
     ['dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, unhighlight, false)
     });
-    // מעצב את האובייקט כאשר יש קובץ שנגרר לתוכו
+    // Formats the object when there is a file dragged into it
     function highlight(e) {
         dropArea.classList.add('highlight');
-        t.style.display = "none";
+        f.style.display = "none";
     }
-    // מבטל את העיצוב במידה ואין קובץ שנגרר לתוכו
+    // Cancels the design if there is no file dragged into it
     function unhighlight(e) {
         dropArea.classList.remove('highlight');
-       // t.style.display = "block";
     }
 }
-// פונקציה המטפלת באירוע גרירת קובץ
+// A function that handles a file drag event
 function handleDrop(e) {
-    document.getElementById('FlightsTable').style.display = "block";
+    document.getElementById('form').style.display = "block";
     let dt = e.dataTransfer
     let files = dt.files
-    // שליחת לפונקציה שמעלה כל קובץ בנפרד
+    // A function that uploads each file separately
     handleFiles(files)
 }
 
@@ -50,85 +46,83 @@ function handleFiles(files) {
 
     ([...files]).forEach(uploadFile)
 }
-// פונקציה שמעלה קובץ לשרת באמצעות פוסט
+// A function that uploads a file to the server using the Post command
 function uploadFile(file) {
-    var reader = new FileReader();
-    let jsonText;
-    let ContentType = 'application/json;charset=utf-8';
-    // פונקציה לביצוע אחרי סיום קריאת הקובץ כטקסט 
+    let reader = new FileReader();
+    // Function to execute after reading the file as text
     reader.onload = function (event) {
-        //הקובץ טקסט שקראתי
-        jsonText = event.target.result
-        //כתובת לשליחה בפוסט
-        let url = "http://" + port + ":" + ip + "/api/FlightPlan"
-        let postOptions = preparePost(jsonText);
-        //פונקציה היוצרת את הפרמטרים של בקשת הפוסט
-        function preparePost(todo) {
-            let todoAsSTR = JSON.stringify(todo);
-            return {
-                "method": "POST",
-                "mode": 'cors',
-                "credentials": 'same-origin',
-                "headers": {
-                    'Content-Type': ContentType,
-                },
-                "body": todo
-            }
-        }
-        //מבצע את פקודת הפוסט עם הפרמטרים הרלוונטיים
-        fetch(url, postOptions)
+        //Address to send by post command
+        let postOptions = preparePost(event.target.result);
+        //Executes the post command with the relevant parameters
+        fetch("http://" + port + ":" + ip + "/api/FlightPlan", postOptions)
             .then(Response => Response.text())
-            .then(Response => console.log("response: " + Response))
     };
-    // פונקציה לביצוע קריאת הקובץ כטקסט
-    reader.readAsText(file); 
+    // A function that reads the file as text
+    reader.readAsText(file);
 }
+//A function that creates the parameters of the post request
+function preparePost(todo) {
+    let ContentType = 'application/json;charset=utf-8';
+    return {
+        "method": "POST",
+        "mode": 'cors',
+        "credentials": 'same-origin',
+        "headers": {
+            'Content-Type': ContentType,
+        },
+        "body": todo
+    }
+}
+
 function getFunc() {
     const time = new Date;
-    //המרת הזמן הנוכחי לפורמט הנדרש בתרגיל
+    //Converts the current time to the required format in the exercise
     let timeToSend = time.toISOString().split('.')[0] + "Z"
-    timeToSend = "http://" + port + ":" + ip + "/api/Flights?relative_to=" + timeToSend +"&sync_all";
+    timeToSend = "http://" + port + ":" + ip + "/api/Flights?relative_to="
+        + timeToSend + "&sync_all";
     async function getFlightsAsync() {
-        //מבצע את הפעולה גט ושומר את התוצאה
+        //Executes the GET command and saves the result
         let response = await fetch(timeToSend);
-        // המרת התוצאה לאוביקט גייסון
+        // Convert the result to a Jason object
         let data = await response.json()
         createMarkerFromFlight(data); //added by Gal
         refreshMap();
         return data;
     }
-    //פונקציה שבודקת אם המידע ריק ושולחת אותה לפונקציה נוספת שתמלא את הטבלה
+    //A function that checks if the information is empty
+    //and sends it to another function that fills the table
     getFlightsAsync()
         .then(data => {
             if (data && data.length) {
                 populateFlights(data)
             }
-            })
- }
+        })
+}
 
 function populateFlights(json) {
     //createMarkerFromFlight(json);
-    // מקבלת מצביע לגוף של הטבלה
+    // Gets a pointer to the body of the table
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
-    //דגל שמטרתו לבדוק אם התבצעה לחיצה
+    //A flag intended to check if a click was made
     let press = 0;
-    //ריקון הטבלה מהתוכן הקיים
-     while (FlightsBody.firstChild) {
-        //בדיקה אם השורה הנוכחית בטבלה מודגשת
-         if (press == 0 && FlightsBody.firstChild.firstChild != null)
-         {
-             press = checkPress(FlightsBody.firstChild);            
-         }
-        //מחיקת השורה הנוכחית
+    //Empty the table from the existing content
+    while (FlightsBody.firstChild) {
+        //Check if the current row in the table is highlighted
+        if (press == 0 && FlightsBody.firstChild.firstChild != null)
+        {
+            press = checkPress(FlightsBody.firstChild);
+        }
+        //Delete the current row
         FlightsBody.removeChild(FlightsBody.firstChild);
     }
-     
-    //מייצר את שורות הטבלה מחדש
+
+    //Produces the table rows again
     json.forEach((row) => {
-        createRow(row, FlightsBody,press);
+        createRow(row, FlightsBody, press);
     });
 }
-//פונקציה שבהנתן שורה בודקת אם היא מודגשת- אם כן מחזירה את המזהה שלה, אחרת-0
+//A function in which a row checks to see if it is highlighted
+//- then returns its ID, otherwise it returns - 0
 function checkPress(row) {
     if (row.style.backgroundColor == "rgb(108, 122, 137)") {
         return row.firstChild.textContent;
@@ -136,74 +130,79 @@ function checkPress(row) {
     return 0;
 }
 
-function createRow(row, FlightsBody,press)
-{
-    //הגדרת אייקון המחיקה
+function createRow(row, FlightsBody, press) {
+    //Definition of delete button
     let img = document.createElement('img');
     img.src = "delete.png";
-    img.id="delImg";
+    img.id = "delImg";
     img.height = 30;
     img.width = 25;
     img.align = "left";
-    //הגדרת שורה חדשה בטבלה
-    const tr = document.createElement("tr");
-    //הגדרת תא
-    const tdID = document.createElement("td");
-    //השמת הערך המתאים בכל תא שיש בשורה בטבלה
+    //Define a new row in the table
+    let tr = document.createElement("tr");
+    //Set cell for row in table
+    let tdID = document.createElement("td");
+    //Placing the appropriate value in each cell that has a row in the table
     tdID.textContent = row.flight_id;
-    const tdAirline = document.createElement("td");
+    let tdAirline = document.createElement("td");
     tdAirline.textContent = row.company_name;
-    const tdExternal = document.createElement("td");
+    let tdExternal = document.createElement("td");
     tdExternal.textContent = row.is_external;
-    tdExternal.textContent = tdExternal.textContent.charAt(0).toUpperCase() + tdExternal.textContent.slice(1);
-    //let tdDelete = ????; 
-    //אם אכן הטיסה פנימית- נוסיף עבורה את אייקון המחיקה
+    tdExternal.textContent = tdExternal.textContent.charAt(0).toUpperCase()
+        + tdExternal.textContent.slice(1);
+    let tdDelete = document.createElement("td");
+    tdDelete.textContent = "";
+    //If the flight is not external, we will add the delete button for it
     if (row.is_external == false) {
         tdDelete = img;
     }
-    //בדיקה האם המזהה של השורה הוא המזהה של השורה המודגשת בעבר- ואם כן מדגיש אותה שוב
-    if (press != 0 && row.flight_id == press) tr.style.backgroundColor = "#6C7A89";
-    //הכנסת התאים לשורה החדשה
+    //Check if the current row ID is the same as the previously submitted row ID -
+    //If so, highlight it again
+    if (press != 0 && row.flight_id == press) tr.style.backgroundColor = "rgb(108, 122, 137)";
+    //Insert the cells into the new row
     tr.appendChild(tdID);
     tr.appendChild(tdAirline);
     tr.appendChild(tdExternal);
     tr.appendChild(tdDelete);
-    //הגדרת טיפול באירוע לחיצה
+    //Define handling of a click event
     tr.onclick = function () {
-        //שמירת של המזהה של השורה שנלחצה
-        let CellClickID = event.srcElement.parentElement.firstChild.textContent;
-        let src = event.srcElement;
-        //(בדיקה האם הלחיצה התבצעה על תמונה (של אייקון המחיקה
-        if (src instanceof HTMLImageElement) {
-            //קריאה לפונקציה שמבקשת לבצע מחיקה מהשרת
-            deleteFlight(CellClickID);
-            removeTrack(CellClickID);
-            removeMarkerById(CellClickID);
-            //מחיקת השורה מהטבלה
-            FlightsBody.removeChild(event.srcElement.parentElement);
-            //מוחק את פרטי הטיסה במידת הצורך
-            DeleteUpdateFlightDetailsFromClient(event.srcElement.parentElement);
-        //אם הלחיצה התבצעה על חלק אחר של השורה 
-        } else {
-            if (flag == 0) {
-                //removeTrack(data["flight_id"]); //added by Gal
-                resetMarkers();
-                //generateTrackFromId(data["flight_id"], data); //added by Gal
-            }
-            //הדגשת השורה
-            pressRow(CellClickID)
-            // הבאת פרטי הטיסה באמצעות בקשת גט+מזהה
-            getFlightPlanByID(CellClickID);
-            
-        }
+        clickRow(event)
     };
     FlightsBody.appendChild(tr);
 }
 
+function clickRow(event) {
+    //Saves the ID of the clicked row
+    let CellClickID = event.srcElement.parentElement.firstChild.textContent;
+    let src = event.srcElement;
+    //Checking for a click (image of the delete button)
+    if (src instanceof HTMLImageElement) {
+        //  A call to a function that wants to delete from the server
+        deleteFlight(CellClickID);
+        removeTrack(CellClickID);
+        removeMarkerById(CellClickID);
+        //  Delete the row from the table
+        FlightsBody.removeChild(event.srcElement.parentElement);
+        //Deletes flight information if needed
+        DeleteUpdateFlightDetailsFromClient(event.srcElement.parentElement);
+        //If clicked on another part of the line
+    } else {
+        if (flag == 0) {
+            //removeTrack(data["flight_id"]); //added by Gal
+            resetMarkers();
+            //generateTrackFromId(data["flight_id"], data); //added by Gal
+        }
+        //Highlight the line
+        pressRow(CellClickID)
+        // Fetch flight details with GET request + ID
+        getFlightPlanByID(CellClickID);
+
+    }
+}
 function deleteFlight(data) {
     url = "http://" + port + ":" + ip + "/api/Flights/" + data;
     async function getFlightsAsync() {
-        //מבצע בקשה למחיקה של הטיסה הרלוונטית מהשרת 
+        //Requests to delete the relevant flight from the server
         let response = await fetch(url, { method: 'DELETE' });
         let data = await response.text()
         return data;
@@ -216,9 +215,10 @@ function deleteFlight(data) {
 
 function pressRow(CellClickID) {
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
-    var i = 0;
+    let i = 0;
     let row;
-    //מעבר על שורות הטבלה, הסרת הדגשה קיימת וביצוע הדגשה חדשה לשורה הרלוונטית
+    //Go over the table rows, remove an existing highlight,
+    //and perform a new highlight to the relevant row
     for (i; i < FlightsBody.childElementCount; i++) {
         row = FlightsBody.rows[i];
         if (row.style.backgroundColor == "rgb(108, 122, 137)") {
@@ -233,22 +233,22 @@ function pressRow(CellClickID) {
 function getFlightPlanByID(id) {
     url = "http://" + port + ":" + ip + "/api/FlightPlan/" + id;
     async function getFlightsAsync() {
-        //ביצוע בקשת הגט
+        //Execute the get request
         let response = await fetch(url);
-        //המרת התשובה אובייקט גייסון
+        //Convert the answer to the Jason object
         let data = await response.json()
         return data;
     }
     getFlightsAsync()
         .then(data => {
-            //עידכון פרטי הטיסה
+            //Update flight details
             updateFlightDetailsFromServer(data, id)
         })
 }
 function updateFlightDetailsFromServer(data, flightID) {
     if (flag == 0) {
         generateTrackFromId(flightID, data);
-    }    
+    }
     let landingTime = calculateLandingTime(data["initial_location"]["date_time"], data);
     document.getElementById("comp").innerHTML = data.company_name;
     document.getElementById("initLong").innerHTML = "(" + data.initial_location.longitude + ", ";
@@ -256,12 +256,14 @@ function updateFlightDetailsFromServer(data, flightID) {
     document.getElementById("EndTime").innerHTML = landingTime.toISOString();
     document.getElementById("StartTime").innerHTML = data.initial_location.date_time;
     document.getElementById("pass").innerHTML = data.passengers;
-    document.getElementById("finalLong").innerHTML = "(" + data.segments[data.segments.length - 1].longitude + ", ";
-    document.getElementById("finalLatit").innerHTML = data.segments[data.segments.length - 1].latitude + ")";
+    document.getElementById("finalLong").innerHTML = "("
+        + data.segments[data.segments.length - 1].longitude + ", ";
+    document.getElementById("finalLatit").innerHTML =
+        data.segments[data.segments.length - 1].latitude + ")";
     flag = 0
 }
 function DeleteUpdateFlightDetailsFromClient(data) {
-    //בודק אם השורה שברצוננו למחוק מודגשת- אם כן- מוחק את פרטי הטיסה
+    //Checks whether the line we want to delete is highlighted - then deletes flight information
     if (data.style.backgroundColor == "rgb(108, 122, 137)") {
         document.getElementById("comp").innerHTML = "";
         document.getElementById("initLong").innerHTML = "";
@@ -520,9 +522,9 @@ function removeMarkerById(wantedId) {
 }
 
 function resetDetails() {
-    // מוחק שורה מסומנת מהטבלה
+    // Deleting a highlighted row from the table
     pressRow("");
-    // מעדכן את פרטי הטיסה המוצגים 
+    // Updating flight information shown
     document.getElementById("comp").innerHTML = "";
     document.getElementById("initLong").innerHTML = "";
     document.getElementById("initLatit").innerHTML = "";
