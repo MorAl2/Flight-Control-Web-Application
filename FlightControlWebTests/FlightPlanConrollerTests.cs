@@ -4,17 +4,11 @@ using System;
 using FlightControlWeb.Models;
 using FlightControlWeb.Controllers;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using FlightControlWeb.Models;
-using FlightControlWeb.Controllers;
-using System.Collections.Generic;
 using Autofac.Extras.Moq;
 using System.Threading.Tasks;
 
 namespace FlightControlWebTests
 {
-    
     [TestClass]
     public class FlightPlanConrollerTests
     {
@@ -88,8 +82,12 @@ namespace FlightControlWebTests
 
         private async Task<FlightPlan> getSampleFlightPlan(string id)
         {
-            var flightPlan = new FlightPlan();
+            return await Task.Run(() => GetAsyncSampleFlightPlan(id));
+        }
 
+        private FlightPlan GetAsyncSampleFlightPlan(string id)
+        {
+            var flightPlan = new FlightPlan();
             //new segment list.
             List<Segment> list = new List<Segment>();
             var segments = new Segment();
@@ -110,7 +108,6 @@ namespace FlightControlWebTests
 
             return flightPlan;
         }
-
 
     }
 }
