@@ -28,9 +28,11 @@ namespace FlightControlWeb.Models
 
         public bool IsValidLocationAndTime()
         {
-            if (this.Latitude != Double.NaN && this.Longitude != Double.NaN && this.StartTime != null)
+            if (this.Latitude != Double.NaN && this.Longitude != Double.NaN 
+                && this.StartTime != null)
             {
-                if (this.Latitude >= -90 && this.Latitude <= 90 && this.Longitude >= -180 && this.Longitude <= 180)
+                if (this.Latitude >= -90 && this.Latitude <= 90 
+                    && this.Longitude >= -180 && this.Longitude <= 180)
                 {
                     return true;
                 }

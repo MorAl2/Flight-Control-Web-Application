@@ -20,9 +20,11 @@ namespace FlightControlWeb.Models
         // checking if the segment is valid.
         public Boolean IsValidSegment()
         {
-            if(this.Latitude != Double.NaN && this.Longitude != Double.NaN && this.Timespan_seconds != Double.NaN)
+            if(this.Latitude != Double.NaN && this.Longitude != Double.NaN 
+                && this.Timespan_seconds != Double.NaN)
             {
-                if (this.Latitude >= -90 && this.Latitude <= 90 && this.Longitude >= -180 && this.Longitude <= 180 && Timespan_seconds >= 0)
+                if (this.Latitude >= -90 && this.Latitude <= 90 
+                    && this.Longitude >= -180 && this.Longitude <= 180 && Timespan_seconds >= 0)
                 {
                     return true;
                 }

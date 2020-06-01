@@ -33,7 +33,8 @@ namespace FlightControlWeb.Models
         // checking if the FlightPlan is Valid.
         public Boolean IsValidFlightPlan()
         {
-            if (this.Company_Name != null && this.Initial_Location != null && this.Passengers != -1 && this.Segments != null)
+            if (this.Company_Name != null && this.Initial_Location != null 
+                && this.Passengers != -1 && this.Segments != null)
             {
                 // checking if all the segments are good.
                 bool res =  IsGoodSegments();

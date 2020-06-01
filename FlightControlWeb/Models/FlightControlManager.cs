@@ -14,11 +14,18 @@ namespace FlightControlWeb.Models
     public class FlightControlManager : IFlightManager
     {
         // dictionary for holding the local FLight Plans. id to flightplan
-        private ConcurrentDictionary<string, FlightPlan> flightPlans = new ConcurrentDictionary<string, FlightPlan>();
+        private ConcurrentDictionary<string, FlightPlan> flightPlans;
         // dictionary for holding the Externtal Servers. id to server
-        private ConcurrentDictionary<string, Server> servers = new ConcurrentDictionary<string, Server>();
+        private ConcurrentDictionary<string, Server> servers;
         // dictioprnay mapping external flight plans to their External server. id to server
-        private ConcurrentDictionary<string, Server> externalFlightsIndex = new ConcurrentDictionary<string, Server>();
+        private ConcurrentDictionary<string, Server> externalFlightsIndex;
+
+        public FlightControlManager()
+        {
+            flightPlans = new ConcurrentDictionary<string, FlightPlan>();
+            servers = new ConcurrentDictionary<string, Server>();
+            externalFlightsIndex = new ConcurrentDictionary<string, Server>();
+        }
 
         // adding a new FlightPlan To the dictioanry
         public void AddFlightPlan(FlightPlan flight)
@@ -69,36 +76,51 @@ namespace FlightControlWeb.Models
         }
 
         // getting the id from the extrenal server.
-        private static async Task<FlightPlan> GetFlightPlanExternal(string id, Server serverExt, HttpClient httpClient)
+        private async Task<FlightPlan> GetFlightPlanExternal(string id, Server serverExt,
+            HttpClient httpClient)
         {
             // var for holding the server response.
             HttpResponseMessage responseMessage;
             // validating the url format and sending a request.
             if (serverExt.ServerURL[serverExt.ServerURL.Length - 1] == '/')
             {
-                responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "api/FlightPlan/" + id);
+                responseMessage = await httpClient.GetAsync(serverExt.ServerURL +
+                    "api/FlightPlan/" + id);
             }
             else
             {
-                responseMessage = await httpClient.GetAsync(serverExt.ServerURL + "/api/FlightPlan/" + id);
+                responseMessage = await httpClient.GetAsync(serverExt.ServerURL +
+                    "/api/FlightPlan/" + id);
             }
             // if the sever returned HTTP error.
             if (!responseMessage.IsSuccessStatusCode)
-            {
                 return new FlightPlan();
-            }
-            // reading the data
-            var responseString = await responseMessage.Content.ReadAsStringAsync();
+            var strdata = await responseMessage.Content.ReadAsStringAsync();
             // creating a json object and then converting to flight plan.
-            JObject jsonFlightPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(responseString);
+            JObject jsonPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(strdata);
             FlightPlan tempFlightPlan = new FlightPlan();
+            CreateFlightPlan(id, jsonPlan, tempFlightPlan);
+            // returning the result flightPlan if it's valid.
+            if (tempFlightPlan.IsValidFlightPlan())
+            {
+                return tempFlightPlan;
+            }
+            return new FlightPlan();
+        }
+
+        private void CreateFlightPlan(string id, JObject jsonFlightPlan, FlightPlan tempFlightPlan)
+        {
             tempFlightPlan.Company_Name = (string)jsonFlightPlan["company_name"];
             tempFlightPlan.Flight_Id = id;
             tempFlightPlan.Initial_Location = new LocationAndTime();
-            tempFlightPlan.Initial_Location.Latitude = (double)jsonFlightPlan["initial_location"]["latitude"];
-            tempFlightPlan.Initial_Location.Longitude = (double)jsonFlightPlan["initial_location"]["longitude"];
-            tempFlightPlan.Initial_Location.StartTime = (DateTime)jsonFlightPlan["initial_location"]["date_time"];
-            tempFlightPlan.Initial_Location.StartTime = tempFlightPlan.Initial_Location.StartTime.ToUniversalTime();
+            tempFlightPlan.Initial_Location.Latitude =
+                (double)jsonFlightPlan["initial_location"]["latitude"];
+            tempFlightPlan.Initial_Location.Longitude =
+                (double)jsonFlightPlan["initial_location"]["longitude"];
+            tempFlightPlan.Initial_Location.StartTime =
+                (DateTime)jsonFlightPlan["initial_location"]["date_time"];
+            tempFlightPlan.Initial_Location.StartTime =
+                tempFlightPlan.Initial_Location.StartTime.ToUniversalTime();
             tempFlightPlan.Passengers = (int)jsonFlightPlan["passengers"];
             tempFlightPlan.Segments = new List<Segment>();
             // adding each segment
@@ -108,39 +130,31 @@ namespace FlightControlWeb.Models
                 segmentTemp.Latitude = (double)segment["latitude"];
                 segmentTemp.Longitude = (double)segment["longitude"];
                 segmentTemp.Timespan_seconds = (int)segment["timespan_seconds"];
-                if(!segmentTemp.IsValidSegment())
-                tempFlightPlan.Segments.Add(segmentTemp);
+                if (!segmentTemp.IsValidSegment())
+                    tempFlightPlan.Segments.Add(segmentTemp);
             }
-            // returning the result flightPlan if it's valid.
-            if (tempFlightPlan.IsValidFlightPlan())
-            {
-                return tempFlightPlan;
-            }
-            return new FlightPlan();
         }
 
         // getting all the flights relevent to the time rcved.
         public async Task<IEnumerable<Flight>> GetFlights(DateTime rel, bool sync_all)
         {
-           
             HttpClient httpClient = new HttpClient();
             // holding the relevent Flights.
             List<Flight> flights = new List<Flight>();
             // going over the local flight plans and checking if the time is right.
             foreach (FlightPlan plan in this.flightPlans.Values)
             {
-                if (plan.GetLandingTime().CompareTo(rel) >= 0 && plan.Initial_Location.StartTime.CompareTo(rel) <= 0)
+                if (plan.GetLandingTime().CompareTo(rel) >= 0
+                    && plan.Initial_Location.StartTime.CompareTo(rel) <= 0)
                 {
                     // creating a flight from the flight plan.
                     Flight flight = new Flight(plan, false);
                     LocationAndTime Current = plan.GetCurrentLocation(rel);
                     flight.Longitude = Current.Longitude;
                     flight.Latitude = Current.Latitude;
-                    // adding to the relevent flights.
                     flights.Add(flight);
                 }
             }
-            // checking if need to look extrernal.
             if (sync_all)
             {
                 // going over all the external servers.
@@ -154,40 +168,40 @@ namespace FlightControlWeb.Models
             return flights.OrderBy(e => e.Is_external ? 1 : 0);
         }
 
-        private async Task GetFlightsExternal(DateTime rel, HttpClient httpClient, List<Flight> flights, Server server)
+        private async Task GetFlightsExternal(DateTime rel, HttpClient httpClient,
+            List<Flight> flights, Server server)
         {
             try
             {
                 HttpResponseMessage responseMessage;
-                // validting the url and requesting the flights.
                 if (server.ServerURL[server.ServerURL.Length - 1] == '/')
                 {
-                    responseMessage = await httpClient.GetAsync(server.ServerURL + "api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    responseMessage = await httpClient.GetAsync(server.ServerURL +
+                        "api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
                 }
                 else
                 {
-                    responseMessage = await httpClient.GetAsync(server.ServerURL + "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    responseMessage = await httpClient.GetAsync(server.ServerURL +
+                        "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
                 }
                 // if the server returned error then go to the next server.
                 if (!responseMessage.IsSuccessStatusCode)
                 {
                     return;
                 }
-                // getting the data
                 var responseString = await responseMessage.Content.ReadAsStringAsync();
-                // the jsons rcved
-                JArray jsonFlightsArray = Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(responseString);
-                // creating the flights
-                CreateFlightFromJson(flights, server, jsonFlightsArray);
+                JArray jsonArray;
+                jsonArray = Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(responseString);
+                CreateFlightFromJson(flights, server, jsonArray);
             }
             catch
             {
-                // if the server didn't respond then go to the next server.
                 return;
             }
         }
 
-        private void CreateFlightFromJson(List<Flight> flights, Server server, JArray jsonFlightsArray)
+        private void CreateFlightFromJson(List<Flight> flights, Server server,
+            JArray jsonFlightsArray)
         {
             // going over each json flight object and creating flights.
             foreach (var flight in jsonFlightsArray)
@@ -270,7 +284,8 @@ namespace FlightControlWeb.Models
             string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             if (length == 8)
             {
-                result += chars[random.Next(0, chars.Length)].ToString() + chars[random.Next(0, chars.Length)].ToString();
+                result += chars[random.Next(0, chars.Length)].ToString() +
+                    chars[random.Next(0, chars.Length)].ToString();
                 length = 6;
             }
             int size = random.Next(1, 3);

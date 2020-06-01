@@ -49,9 +49,12 @@ namespace FlightControlWeb.Models
         // checking if the flight is valid.
         public Boolean IsValidFlight()
         {
-            if (this.Company_Name != "" && this.Longitude != Double.NaN && this.Latitude != Double.NaN && this.Flight_id != "" && this.Passengers != -1 && this.TakeOffTime != null)
+            if (this.Company_Name != "" && this.Longitude != Double.NaN &&
+                this.Latitude != Double.NaN && this.Flight_id != "" 
+                && this.Passengers != -1 && this.TakeOffTime != null)
             {
-                if (this.Latitude >= -90 && this.Latitude <= 90 && this.Longitude >= -180 && this.Longitude <= 180)
+                if (this.Latitude >= -90 && this.Latitude <= 90 
+                    && this.Longitude >= -180 && this.Longitude <= 180)
                 {
                     return true;
                 }

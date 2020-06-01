@@ -37,7 +37,8 @@ namespace FlightControlWeb.Controllers
             // checking if valid.
             if (flightPlan.IsValidFlightPlan())
             {
-                flightPlan.Initial_Location.StartTime = flightPlan.Initial_Location.StartTime.ToUniversalTime();
+                flightPlan.Initial_Location.StartTime 
+                    = flightPlan.Initial_Location.StartTime.ToUniversalTime();
                 this.flightControlManager.AddFlightPlan(flightPlan);
                 return Ok("Flight Id: " + flightPlan.Flight_Id);
             }
