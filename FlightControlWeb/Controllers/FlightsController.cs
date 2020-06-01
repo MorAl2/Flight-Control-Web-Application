@@ -12,6 +12,7 @@ namespace FlightControlWeb.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Dependency Injection of the Control Manager.
     public class FlightsController : ControllerBase
     {
         private readonly IFlightManager flightControlManager;
@@ -22,6 +23,7 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/Flights
         [HttpGet]
+        // getting all the relevent flights.
         public async Task<IEnumerable<Flight>> GetFlights([FromQuery] DateTime relative_to)
         {
             relative_to = relative_to.ToUniversalTime();
@@ -31,6 +33,7 @@ namespace FlightControlWeb.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
+        // deleting a flight.
         public void DeleteFlight(string id)
         {
             this.flightControlManager.RemoveFlightPlan(id);

@@ -12,6 +12,7 @@ namespace FlightControlWeb.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Dependency Injection of the Control Manager.
     public class FlightPlanController : ControllerBase
     {
         private readonly IFlightManager flightControlManager;
@@ -22,6 +23,7 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/FlightPlan/5
         [HttpGet("{id}", Name = "Get")]
+        // getting FlightPlan By Id.
         public async Task<FlightPlan> GetFlightPlan(string id)
         {
             return await this.flightControlManager.GetFlightPlan(id);
@@ -29,9 +31,11 @@ namespace FlightControlWeb.Controllers
 
         // POST: api/FlightPlan
         [HttpPost]
+        // adding a new FlightPlan.
         public ActionResult AddFlightPlan([FromBody]FlightPlan flightPlan)
         {
-            if (IsValidFlightPlan(flightPlan))
+            // checking if valid.
+            if (flightPlan.IsValidFlightPlan())
             {
                 flightPlan.Initial_Location.StartTime = flightPlan.Initial_Location.StartTime.ToUniversalTime();
                 this.flightControlManager.AddFlightPlan(flightPlan);
@@ -39,17 +43,6 @@ namespace FlightControlWeb.Controllers
             }
             return BadRequest("Invalid FlightPlan");
 
-        }
-
-        public Boolean IsValidFlightPlan(FlightPlan plan)
-        {
-            if(plan.Company_Name!=null&& plan.Initial_Location!=null && plan.Passengers!=-1 && plan.Segments!= null)
-            {
-                if(plan.Initial_Location.Latitude!=Double.NaN && plan.Initial_Location.Longitude != Double.NaN && plan.Initial_Location.StartTime != null)
-                return true;
-            }
-
-            return false;
         }
     }
 }

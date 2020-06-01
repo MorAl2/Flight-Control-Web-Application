@@ -9,15 +9,25 @@ namespace FlightControlWeb.Models
     public class Segment
     {   
         [JsonPropertyName("longitude")]
-        public Double Longitude { get; set; }
-        [JsonPropertyName("latitude")]
-        public Double Latitude { get; set; }
-        [JsonPropertyName("timespan_seconds")]
-        public Double Timespan_seconds { get; set; }
+        public Double Longitude { get; set; } = Double.NaN;
 
-        public override string ToString()
+        [JsonPropertyName("latitude")]
+        public Double Latitude { get; set; } = Double.NaN;
+
+        [JsonPropertyName("timespan_seconds")]
+        public Double Timespan_seconds { get; set; } = Double.NaN;
+
+        // checking if the segment is valid.
+        public Boolean IsValidSegment()
         {
-            return "My OSet is" + Longitude;
+            if(this.Latitude != Double.NaN && this.Longitude != Double.NaN && this.Timespan_seconds != Double.NaN)
+            {
+                if (this.Latitude >= -90 && this.Latitude <= 90 && this.Longitude >= -180 && this.Longitude <= 180 && Timespan_seconds >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

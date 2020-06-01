@@ -7,12 +7,13 @@ namespace FlightControlWeb.Models
 {
     public class Server
     {
-        public string ServerId { get; set; }
-        public string ServerURL { get; set; }
+        public string ServerId { get; set; } = "";
+        public string ServerURL { get; set; } = "";
 
+        // checkking if the server is valid.
         public Boolean IsValidServer()
         {
-            if(this.ServerId != null && this.ServerURL != null)
+            if(this.ServerId != "" && this.ServerURL != "")
             {
                 return true;
             }

@@ -26,6 +26,7 @@ namespace FlightControlWeb
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            // Dependency Injection of The Manager.
             services.AddSingleton(typeof(IFlightManager),typeof(FlightControlManager));
                         
         }

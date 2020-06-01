@@ -12,15 +12,16 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class ServersController : ControllerBase
     {
+        // Dependency Injection of the Control Manager.
         private readonly IFlightManager flightControlManager;
         public ServersController(IFlightManager flight)
         {
             this.flightControlManager = flight;
         }
 
-
         // GET: api/Servers
         [HttpGet]
+        // getting all the servers
         public IEnumerable<Server> GetServers()
         {
             return this.flightControlManager.GetServers();
@@ -28,6 +29,7 @@ namespace FlightControlWeb.Controllers
 
         // POST: api/Servers
         [HttpPost]
+        // adding a server and checking if valid.
         public ActionResult AddServer([FromBody] Server server)
         {
             if (server.IsValidServer())
@@ -40,6 +42,7 @@ namespace FlightControlWeb.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
+        // deleting extenal server by id.
         public void DeleteServer(string id)
         {
             this.flightControlManager.RemoveServer(id);

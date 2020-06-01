@@ -19,6 +19,7 @@ namespace FlightControlWeb.Models
         [JsonPropertyName("segments")]
         public List<Segment> Segments { get; set; }
 
+        // calculating the landing time.
         public DateTime GetLandingTime()
         {
             DateTime tempTime = this.Initial_Location.StartTime;
@@ -29,11 +30,40 @@ namespace FlightControlWeb.Models
             return tempTime;
         }
 
+        // checking if the FlightPlan is Valid.
+        public Boolean IsValidFlightPlan()
+        {
+            if (this.Company_Name != null && this.Initial_Location != null && this.Passengers != -1 && this.Segments != null)
+            {
+                // checking if all the segments are good.
+                bool res =  IsGoodSegments();
+                if (this.Initial_Location.IsValidLocationAndTime() && res)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // checking if all the segments are good.
+        public bool IsGoodSegments()
+        {
+            foreach (Segment segment in this.Segments)
+            {
+                if (!segment.IsValidSegment())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // getting the current location by Interpolation.
         public LocationAndTime GetCurrentLocation(DateTime rel)
         {
             //LocationAndTime start = new LocationAndTime();
             int segNum = 0;
             DateTime dateTimeTemp = this.Initial_Location.StartTime;
+            // finding the current segment.
             for (; segNum < this.Segments.Count; segNum++)
             {
                 dateTimeTemp = dateTimeTemp.AddSeconds(Segments[segNum].Timespan_seconds);
@@ -42,10 +72,12 @@ namespace FlightControlWeb.Models
                     break;
                 }
             }
+            // if it wasnt found.
             if(segNum == this.Segments.Count)
             {
                 return new LocationAndTime(0, 0, rel);
             }
+            // calculating hte longtitude and latitude.
             if(segNum > 0)
             {
                 TimeSpan timeSinceSegmentStarted = dateTimeTemp.Subtract(rel);
@@ -70,7 +102,6 @@ namespace FlightControlWeb.Models
             {
                 return new LocationAndTime(0, 0, DateTime.Now);
             }
-
         }
     }
 }

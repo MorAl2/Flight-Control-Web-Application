@@ -25,5 +25,18 @@ namespace FlightControlWeb.Models
         public Double Latitude { get; set; } = Double.NaN;
         [JsonPropertyName("date_time")]
         public DateTime StartTime { get; set; }
+
+        public bool IsValidLocationAndTime()
+        {
+            if (this.Latitude != Double.NaN && this.Longitude != Double.NaN && this.StartTime != null)
+            {
+                if (this.Latitude >= -90 && this.Latitude <= 90 && this.Longitude >= -180 && this.Longitude <= 180)
+                {
+                    return true;
+                }
+            }
+            return false;
+                
+        }
     }
 }
