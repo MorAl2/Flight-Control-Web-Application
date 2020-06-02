@@ -8,7 +8,7 @@ namespace FlightControlWeb.Models
     public interface IFlightManager
     {
         public void AddFlightPlan(FlightPlan flight);
-        public void addServer(Server s);
+        public void AddServer(Server s);
         public Task<FlightPlan> GetFlightPlan(string id);
         public Task<IEnumerable<Flight>> GetFlights(DateTime rel, bool sync_all);
         public IEnumerable<Server> GetServers();

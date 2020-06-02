@@ -31,12 +31,12 @@ function load() {
         dropArea.addEventListener(eventName, unhighlight, false)
     });
     // Formats the object when there is a file dragged into it
-    function highlight(e) {
+    function highlight() {
         dropArea.classList.add('highlight');
         f.style.display = "none";
     }
     // Cancels the design if there is no file dragged into it
-    function unhighlight(e) {
+    function unhighlight() {
         dropArea.classList.remove('highlight');
     }
 }
@@ -235,7 +235,6 @@ function clickRow(event) {
     }
 }
 function deleteFlight(data) {
-    //console.log("inside deleteFlight");
     let url = "http://" + port + ":" + ip + "/api/Flights/" + data;
     async function getFlightsAsync() {
         //Requests to delete the relevant flight from the server
@@ -244,9 +243,6 @@ function deleteFlight(data) {
         return data;
     }
     getFlightsAsync()
-        .then(data => {
-            //console.log(data)
-        })
 }
 
 function pressRow(CellClickID) {

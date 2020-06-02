@@ -38,7 +38,7 @@ namespace FlightControlWeb.Models
         }
 
         //adding a new External Server.
-        public void addServer(Server s)
+        public void AddServer(Server s)
         {
             servers.TryAdd(s.ServerId, s);
         }
@@ -181,7 +181,7 @@ namespace FlightControlWeb.Models
                 }
                 else
                 {
-                    string dta = "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    string dta = "/api/Flights?relative_to=" +rel.ToString("yyyy-MM-ddTHH:mm:ssZ");
                     responseMessage = await client.GetAsync(server.ServerURL + dta);
                 }
                 // if the server returned error then go to the next server.

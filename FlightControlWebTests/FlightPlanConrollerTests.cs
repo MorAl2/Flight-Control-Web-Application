@@ -13,7 +13,9 @@ namespace FlightControlWebTests
     public class FlightPlanConrollerTests
     {
         [TestMethod]
-        public void IsValidFlightPlan_FullFlight_ReturnsTrue()
+        // test for IsValidFlightPlan function.
+        // in this scenario - we are adding legal flight and expect to get true as a return value.
+        public void IsValidFlightPlanFullFlightReturnsTrue()
         {
             // Arrange
             //new FlightPlan.
@@ -29,8 +31,6 @@ namespace FlightControlWebTests
             //new location.
             var location = new LocationAndTime(16, 14, new DateTime());
             
-            //initial our flightPlan
-            //flightPlan.Flight_Id = "test12";
             flightPlan.Passengers = 50;
             flightPlan.Company_Name = "comp-name";
             flightPlan.Initial_Location = location;
@@ -46,7 +46,9 @@ namespace FlightControlWebTests
         }
 
         [TestMethod]
-        public void IsValidFlightPlan_NotFullFlight_ReturnsFalse()
+        // test for IsValidFlightPlan function.
+        // in this scenario, we are adding illegal flight and expect to get true as a return value.
+        public void IsValidFlightPlanNotFullFlightReturnsFalse()
         {
             // Arrange
             var flightPlanTester = new FlightPlanController(new FlightControlManager());
@@ -58,33 +60,42 @@ namespace FlightControlWebTests
 
 
         [TestMethod]
-        public void GetPlanByIDTest_ValidData_ReturnsFlightPlan()
+        // test for the GetPlanByIDTest, using mock to mocking the IFlightManager interface object.
+        // by creating a fake FlightPlanController we check if we can get a whole flight plan,
+        // using asynchronic task.
+        // in this scenario - a success will be:
+        // 1. get a non null object.
+        // 2. get identical flight plan from our fake function and the mock's one.
+        public void GetPlanByIDTestValidDataReturnsFlightPlan()
         {
             using (var mock = AutoMock.GetLoose())
             {
                 var testID = "12345";
                 mock.Mock<IFlightManager>()
                     .Setup(x => x.GetFlightPlan(testID))
-                    .Returns(getSampleFlightPlan(testID));
+                    .Returns(GetSampleFlightPlan(testID));
 
                 var controllerTester = mock.Create<FlightPlanController>();
 
-                var expected = getSampleFlightPlan(testID);
+                var expected = GetSampleFlightPlan(testID);
 
                 var actual = controllerTester.GetFlightPlan(testID);
 
                 Assert.IsTrue(actual != null);
-                Assert.AreEqual(expected.Result.Flight_Id, actual.Result.Flight_Id);
-                Assert.AreEqual(expected.Result.Company_Name, actual.Result.Company_Name);
-                Assert.AreEqual(expected.Result.Passengers, actual.Result.Passengers);
+                
+                Assert.AreEqual(expected.Result.Flight_Id, actual.Result.Value.Flight_Id);
+                Assert.AreEqual(expected.Result.Company_Name, actual.Result.Value.Company_Name);
+                Assert.AreEqual(expected.Result.Passengers, actual.Result.Value.Passengers);
             }
         }
 
-        private async Task<FlightPlan> getSampleFlightPlan(string id)
+        // mocking the GetFlightPlan of FlightPlanController class.
+        private async Task<FlightPlan> GetSampleFlightPlan(string id)
         {
             return await Task.Run(() => GetAsyncSampleFlightPlan(id));
         }
 
+        // a help function - called from the task of GetSampleFlightPlan
         private FlightPlan GetAsyncSampleFlightPlan(string id)
         {
             var flightPlan = new FlightPlan();
@@ -98,8 +109,6 @@ namespace FlightControlWebTests
             //new location.
             var location = new LocationAndTime(16, 14, new DateTime());
 
-            //initial our flightPlan
-            //flightPlan.Flight_Id = "test12";
             flightPlan.Flight_Id = id;
             flightPlan.Passengers = 50;
             flightPlan.Company_Name = "comp-name";

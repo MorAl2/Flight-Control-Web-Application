@@ -7,7 +7,11 @@ namespace FlightControlWebTests
     public class FlightControlManagerTests
     {
         [TestMethod]
-        public void Add_Get_EemoveServer_LeagalInput_ReturnValidAnswers()
+        //test the the get and remove methonds, using the add method during the test to confirm.
+        //the function is inserting legal flight to the server, ask for it again and delete it.
+        //to make sure the remove method worked as expected - we check for number of items.
+        //in this scenario - we should find 0 item.
+        public void Add_Get_RemoveServer_LegalInput_ReturnValidAnswers()
         {
             var actualLen = 0;
             var expectedLen = 0;
@@ -17,7 +21,7 @@ namespace FlightControlWebTests
                 ServerId = "testName",
                 ServerURL = "https://www.testUrl.com"
             };
-            flightCtrlManager.addServer(dummyServer);
+            flightCtrlManager.AddServer(dummyServer);
             var result = flightCtrlManager.GetServers();
             foreach (var item in result)
             {
@@ -34,7 +38,11 @@ namespace FlightControlWebTests
         }
 
         [TestMethod]
-        public void Add_RemoveServer_EleagalInput_ReturnsOneItem()
+        // test the the get and remove methonds, using the add method during the test to confirm.
+        // the function is inserting illegal flight to the server, ask for it again and delete it.
+        // to make sure the remove method worked as expected - we check for number of items.
+        // in this scenario - we should find 1 item.
+        public void Add_RemoveServer_ElegalInput_ReturnsOneItem()
         {
             var actualLen = 0;
             var expectedLen = 1;
@@ -45,7 +53,7 @@ namespace FlightControlWebTests
                 ServerId = "testName",
                 ServerURL = "https://www.testUrl.com"
             };
-            flightCtrlManager.addServer(dummyServer);
+            flightCtrlManager.AddServer(dummyServer);
             var result = flightCtrlManager.GetServers();
             flightCtrlManager.RemoveServer(wrongID);
             result = flightCtrlManager.GetServers();

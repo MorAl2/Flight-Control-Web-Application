@@ -34,7 +34,7 @@ namespace FlightControlWeb.Controllers
         {
             if (server.IsValidServer())
             {
-                this.flightControlManager.addServer(server);
+                this.flightControlManager.AddServer(server);
                 return Ok("Server Added");
             }
             return BadRequest("Invalid Server");
