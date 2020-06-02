@@ -282,6 +282,7 @@ namespace FlightControlWeb.Models
         {
             Random random = new Random();
             string result = "";
+            // char options
             string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             if (length == 8)
             {
@@ -290,6 +291,8 @@ namespace FlightControlWeb.Models
                 length = 6;
             }
             int size = random.Next(1, 3);
+
+            // random by size
             if (size == 2)
             {
                 result += random.Next(1000, 10000).ToString();

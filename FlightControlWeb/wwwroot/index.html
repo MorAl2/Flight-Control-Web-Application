@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -12,10 +12,21 @@
     <div class="container-fluid" style="background-color: #f7f7f7;">
 
         <div class="row">
-            <div class="col-md-7 p-3 border" style="background-color: #f7f7f7;"><div id="map" class="card" style="height:400px;"></div></div>
+
+            <div class="col-md-7 p-3 border" style="background-color: #f7f7f7;">
+                <div class="myAlert-getSyncALL alert alert-warning">
+
+                    <p id="getSyncALL"> </p>
+                </div>
+                <div id="map" class="card" style="height:400px;">
+                </div>
+            </div>
             <div class="col-md-5 p-3 border" style="background-color: #f7f7f7;">
+                <div class="myAlert-other alert alert-warning">
+                    <p id="others"> </p>
+                </div>
                 <div id="drop-area">
-                    <form class="my-form">
+                    <form class="my-form" id="form">
                         <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
                         <div class="table-wrapper-scroll-y my-custom-scrollbar">
                             <table id="FlightsTable" class="table table-bordered table-striped mb-0" style="background-color:#f7f7f7;">
