@@ -43,9 +43,15 @@ namespace FlightControlWeb.Controllers
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
         // deleting extenal server by id.
-        public void DeleteServer(string id)
+        public ActionResult DeleteServer(string id)
         {
-            this.flightControlManager.RemoveServer(id);
+            if (this.flightControlManager.RemoveServer(id))
+            {
+                return Ok("Server Removed");
+            }
+            else {
+                return BadRequest("ID Wasn't Found");
+            }
         }
     }
 }

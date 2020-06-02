@@ -12,8 +12,8 @@ namespace FlightControlWeb.Models
         public Task<FlightPlan> GetFlightPlan(string id);
         public Task<IEnumerable<Flight>> GetFlights(DateTime rel, bool sync_all);
         public IEnumerable<Server> GetServers();
-        public void RemoveServer(string id);
-        public void RemoveFlightPlan(string id);
+        public bool RemoveServer(string id);
+        public bool RemoveFlightPlan(string id);
         public string ProvideFlightId(FlightPlan flightPlan);
     }
 }

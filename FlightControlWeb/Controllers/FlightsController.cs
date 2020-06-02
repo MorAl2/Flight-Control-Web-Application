@@ -34,9 +34,16 @@ namespace FlightControlWeb.Controllers
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
         // deleting a flight.
-        public void DeleteFlight(string id)
+        public ActionResult DeleteFlight(string id)
         {
-            this.flightControlManager.RemoveFlightPlan(id);
+            if (this.flightControlManager.RemoveFlightPlan(id))
+            {
+                return Ok("Flight Deleted");
+            }
+            else
+            {
+                return BadRequest("ID Wasn't Found");
+            }
         }
     }
 }

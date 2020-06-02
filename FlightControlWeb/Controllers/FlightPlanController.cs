@@ -24,9 +24,17 @@ namespace FlightControlWeb.Controllers
         // GET: api/FlightPlan/5
         [HttpGet("{id}", Name = "Get")]
         // getting FlightPlan By Id.
-        public async Task<FlightPlan> GetFlightPlan(string id)
+        public async Task<ActionResult<FlightPlan>> GetFlightPlan(string id)
         {
-            return await this.flightControlManager.GetFlightPlan(id);
+            FlightPlan flight =  await this.flightControlManager.GetFlightPlan(id);
+            if(flight == null)
+            {
+                return BadRequest("ID Wasn't Found");
+            }
+            else
+            {
+                return flight;
+            }
         }
 
         // POST: api/FlightPlan

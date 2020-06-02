@@ -68,11 +68,11 @@ namespace FlightControlWeb.Models
                 catch
                 {
                     // the server dosen't responded so no flightplan was found.
-                    return new FlightPlan();
+                    return null;
                 }
             }
             // if wasn't found internal or External.
-            return new FlightPlan();
+            return null;
         }
 
         // getting the id from the extrenal server.
@@ -94,7 +94,7 @@ namespace FlightControlWeb.Models
             }
             // if the sever returned HTTP error.
             if (!responseMessage.IsSuccessStatusCode)
-                return new FlightPlan();
+                return null;
             var strdata = await responseMessage.Content.ReadAsStringAsync();
             // creating a json object and then converting to flight plan.
             JObject jsonPlan = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(strdata);
@@ -105,7 +105,7 @@ namespace FlightControlWeb.Models
             {
                 return tempFlightPlan;
             }
-            return new FlightPlan();
+            return null;
         }
 
         private void CreateFlightPlan(string id, JObject jsonFlightPlan, FlightPlan tempFlightPlan)
@@ -168,7 +168,7 @@ namespace FlightControlWeb.Models
             return flights.OrderBy(e => e.Is_external ? 1 : 0);
         }
 
-        private async Task GetFlightsExternal(DateTime rel, HttpClient httpClient,
+        private async Task GetFlightsExternal(DateTime rel, HttpClient client,
             List<Flight> flights, Server server)
         {
             try
@@ -176,13 +176,13 @@ namespace FlightControlWeb.Models
                 HttpResponseMessage responseMessage;
                 if (server.ServerURL[server.ServerURL.Length - 1] == '/')
                 {
-                    responseMessage = await httpClient.GetAsync(server.ServerURL +
-                        "api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    string dta = "api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    responseMessage = await client.GetAsync(server.ServerURL + dta);
                 }
                 else
                 {
-                    responseMessage = await httpClient.GetAsync(server.ServerURL +
-                        "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    string dta = "/api/Flights?relative_to=" + rel.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    responseMessage = await client.GetAsync(server.ServerURL + dta);
                 }
                 // if the server returned error then go to the next server.
                 if (!responseMessage.IsSuccessStatusCode)
@@ -233,7 +233,7 @@ namespace FlightControlWeb.Models
         }
 
         // remove s erver from the list
-        public void RemoveServer(string id)
+        public bool RemoveServer(string id)
         {
             // deleting the mappings to the servers.
             foreach (KeyValuePair<string, Server> pair in externalFlightsIndex)
@@ -244,13 +244,14 @@ namespace FlightControlWeb.Models
                 }
             }
             // removing the servers.
-            this.servers.TryRemove(id, out _);
+            return this.servers.TryRemove(id, out _);
+
         }
 
         // remove flightplan from the list.
-        public void RemoveFlightPlan(string id)
+        public bool RemoveFlightPlan(string id)
         {
-            flightPlans.TryRemove(id, out _);
+            return flightPlans.TryRemove(id, out _);
         }
 
         // creating a uniqe ID for the flights
