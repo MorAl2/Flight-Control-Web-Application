@@ -1,6 +1,7 @@
 let flag = 0;
 let port = "localhost";
 let ip = "55997";
+let legalDeleteRequest = false;
 
 let defaultResponse = {
     status: Number
@@ -91,14 +92,12 @@ function preparePost(todo) {
 
 //activate the HTTP GET Request every second, and sync all the servers.
 function getFunc() {
-    //console.log("inside getFunc");
     const time = new Date;
     //Converts the current time to the required format in the exercise
     let timeToSend = time.toISOString().split('.')[0] + "Z"
     timeToSend = "http://" + port + ":" + ip + "/api/Flights?relative_to="
         + timeToSend + "&sync_all";
     async function getFlightsAsync() {
-        //console.log("inside getFlightsAsync");
         //Executes the GET command and saves the result
         try {
             let response = await fetch(timeToSend);
@@ -129,8 +128,6 @@ function getFunc() {
  }
 
 function populateFlights(json) {
-    //console.log("inside populateFlights");
-    //createMarkerFromFlight(json);
     // Gets a pointer to the body of the table
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
     //A flag intended to check if a click was made
@@ -152,9 +149,8 @@ function populateFlights(json) {
     });
 }
 //A function in which a row checks to see if it is highlighted
-//- then returns its ID, otherwise it returns - 0
+// then returns its ID, otherwise it returns - 0
 function checkPress(row) {
-   // console.log("inside checkPress");
     if (row.style.backgroundColor == "rgb(108, 122, 137)") {
         return row.firstChild.textContent;
     }
@@ -162,7 +158,6 @@ function checkPress(row) {
 }
 
 function createRow(row, FlightsBody, press) {
-   // console.log("inside createRow");
     //Definition of delete button
     let img = document.createElement('img');
     img.src = "delete.png";
@@ -203,47 +198,60 @@ function createRow(row, FlightsBody, press) {
     FlightsBody.appendChild(tr);
 }
 
-function clickRow(event) {
-    //console.log("inside clickRow");
+async function clickRow(event) {
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
-   // console.log("FlightsBody = " + FlightsBody);
-    //Saves the ID of the clicked row
-    let CellClickID = event.srcElement.parentElement.firstChild.textContent;
+    // Saves the ID of the clicked row
+    let cellClickID = event.srcElement.parentElement.firstChild.textContent;
     let src = event.srcElement;
-    //Checking for a click (image of the delete button)
+    // Checking for a click (image of the delete button)
     if (src instanceof HTMLImageElement) {
-        //  A call to a function that wants to delete from the server
-        deleteFlight(CellClickID);
-        removeTrack(CellClickID);
-        removeMarkerById(CellClickID);
-        //  Delete the row from the table
-        FlightsBody.removeChild(event.srcElement.parentElement);
-        //Deletes flight information if needed
-        DeleteUpdateFlightDetailsFromClient(event.srcElement.parentElement);
-        //If clicked on another part of the line
-    } else {
-        if (flag == 0) {
-            //removeTrack(data["flight_id"]); //added by Gal
-            resetMarkers();
-            //generateTrackFromId(data["flight_id"], data); //added by Gal
+        // A call to a function that wants to delete from the server
+        deleteFlight(cellClickID)
+        await new Promise(sleep => setTimeout(sleep, 100)); //simulate sleep fuction.
+        if (legalDeleteRequest) { //legal delete response has occured.
+            removeTrack(cellClickID);
+            removeMarkerById(cellClickID);
+            // Delete the row from the table
+            FlightsBody.removeChild(event.srcElement.parentElement);
+            // Deletes flight information if needed
+            DeleteUpdateFlightDetailsFromClient(event.srcElement.parentElement);
+        // If clicked on another part of the line
         }
-        //Highlight the line
-        pressRow(CellClickID)
+    } else {
+        if (flag == 0) { //the ckick was on the row and not on the marker.
+            resetMarkers();
+        }
+        // Highlight the line
+        pressRow(cellClickID)
         // Fetch flight details with GET request + ID
-        getFlightPlanByID(CellClickID);
+        getFlightPlanByID(cellClickID);
 
     }
 }
+
+
 function deleteFlight(data) {
     let url = "http://" + port + ":" + ip + "/api/Flights/" + data;
     async function getFlightsAsync() {
-        //Requests to delete the relevant flight from the server
-        let response = await fetch(url, { method: 'DELETE' });
-        let data = await response.text()
-        return data;
+        try {
+            //Requests to delete the relevant flight from the server
+            let response = await fetch(url, { method: 'DELETE' });
+            if (!response.ok) {
+                legalDeleteRequest = false;
+                handleHTTPErrors(response);
+            } else {
+                legalDeleteRequest = true;
+                let data = await response.text()
+                $(".myAlert-other").hide();
+            }
+        } catch (err) {
+            legalDeleteRequest = false;
+            handleErrorsOthers(err);
+        }
     }
-    getFlightsAsync()
+    getFlightsAsync();
 }
+
 
 function pressRow(CellClickID) {
     let FlightsBody = document.querySelector("#FlightsTable > tbody");
@@ -263,7 +271,6 @@ function pressRow(CellClickID) {
 }
 
 function getFlightPlanByID(id) {
-    //console.log("inside getFlightPlanByID");
     let url = "http://" + port + ":" + ip + "/api/FlightPlan/" + id;
     async function getFlightsAsync() {
         try {
@@ -290,7 +297,6 @@ function getFlightPlanByID(id) {
         })
 }
 function updateFlightDetailsFromServer(data, flightID) {
-    //console.log("inside updateFlightDetailsFromServer");
     if (flag == 0) {
         generateTrackFromId(flightID, data);
     }    
@@ -308,7 +314,6 @@ function updateFlightDetailsFromServer(data, flightID) {
     flag = 0
 }
 function DeleteUpdateFlightDetailsFromClient(data) {
-    //console.log("inside DeleteUpdateFlightDetailsFromClient");
     //Checks whether the line we want to delete is highlighted - then deletes flight information
     if (data.style.backgroundColor == "rgb(108, 122, 137)") {
         document.getElementById("comp").innerHTML = "";
@@ -358,19 +363,15 @@ function handleHTTPErrors(error) {
     }
     // throw relvant status error if needed.
     if (error.status >= 300 && error.status <= 399) {
-        console.log(error);
         throw Error("Redirects Error - " + error.status);
     }
     if (error.status >= 401 && error.status <= 499) {
-        console.log(error);
         throw Error("Client errors - " + error.status);
     }
     if (error.status >= 500 && error.status <= 599) {
-        console.log(error);
         throw Error("Server errors - " + error.status);
     }
     if (error.status == 400) {
-        console.log(error);
         throw Error("Error - " + error.statusText);
     }
 }
@@ -412,12 +413,10 @@ let polyline = null; //will be the track layer.
 
 let updateMarker = 0; //when getting a new flight - check if it's already exist.
 
-
-
-L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=VW6elJ2db2FGep8QI3fc', {
+L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=TJLDqseZRmm220ZXMRq1', {
     attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy;'
-        + 'MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy;'
-        + 'OpenStreetMap contributors</a>'
+        + ' MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy;'
+        + ' OpenStreetMap contributors</a>'
 }).addTo(map);
 map.on('click', resetMarkers)
 
@@ -445,7 +444,6 @@ function renderMarker(location, id, time) {
 }
 
 function addAllToMap() { //add all flights to the map layers.
-    //console.log("inside addAllToMap");
     let i = 0;
     for (i; i < markers.length; i++) {
         map.addLayer(markers[i]);
@@ -453,7 +451,7 @@ function addAllToMap() { //add all flights to the map layers.
 }
 
 function selectMarker() { //resize the marker and displays its track.
-    //console.log("inside selectMarker");
+    $(".myAlert-other").hide();
     let thisFlightId = this.id;
     let i = 0;
     for (i; i < markers.length; i++) {
@@ -493,11 +491,8 @@ function renderTrack(marker) { //function for displaing the flight track
     if (trackObj.track.length != 0) { //we have some track on the map.
         map.eachLayer(function (layer) {
             if (polylines.has(layer["_leaflet_id"])) {
-                //console.log("find object with id = " + layer["_leaflet_id"])
                 polylines.delete(layer["_leaflet_id"]);
                 map.removeLayer(layer);
-            } else {
-                //console.log("didn't find object with id = " + layer["_leaflet_id"])
             }
         });
 
@@ -529,7 +524,6 @@ function renderTrack(marker) { //function for displaing the flight track
 }
 
 function fillTrack(flight, flightPlan) { //drawing the track on the map.   
-    //console.log("inside fillTrack");
     flag = 1;
     trackObj.id = flight.id;
     trackObj.track.push(flight.startingLocation);
@@ -549,7 +543,6 @@ function fillTrack(flight, flightPlan) { //drawing the track on the map.
 
 
 function calculateLandingTime(dateAsString, flightPlan) {
-    //console.log("inside calculateLandingTime");
     let landing = new Date(dateAsString);
     let totalTimeSpend = 0;
     let i = 0;
@@ -584,7 +577,6 @@ function createMarkerFromFlight(data) {
 }
 
 function removeTrack(idToCheck) { //clear track if it's flight has been deleted.
-    //console.log("inside removeTrack");
     if (trackObj.id === idToCheck) {
         trackObj.id = "0"; //reset track id
         trackObj.track.length = 0; //reset the track
