@@ -24,5 +24,4 @@ Each flight flight plan contains track represented by sergments, and with press 
 We used Async and Await for fetching data from the server, and Eslint tools to maintin codeing style. 
 
 
-![alt text](https://github.com/MorAl2/Flight-Control-Web-Application/blob/master/IndexPhoto.jpg
-?raw=true)
+![alt text](https://github.com/MorAl2/Flight-Control-Web-Application/blob/master/IndexPhoto.jpg?raw=true)
