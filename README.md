@@ -21,7 +21,7 @@ On the next step, we validated it and sent it to our local server in order to sa
 
 Each flight flight plan contains track represented by sergments, and with press on either the line or the logo, the track is shown at same time with the line and the plain are marked.
 
-We used Async and Await for fetching data from the server, and Eslint tools to maintin codeing style. 
+We used Async and Await for fetching data from the server, and Eslint tools to maintin coding style. 
 
 
 ![alt text](https://github.com/MorAl2/Flight-Control-Web-Application/blob/master/IndexPhoto.jpg?raw=true)
